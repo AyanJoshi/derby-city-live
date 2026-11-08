@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Live lineups, scores and series standings for the Derby City Badminton Invitational, UofL vs Cincinnati.">
+<title>Derby City Live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Barlow+Condensed:wght@500;600;700&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#f4f3f0; --card:#ffffff; --sunk:#efede9; --ink:#141416; --muted:#686b73; --line:#e0ded9;
+  --red:#d01c34; --red-soft:#fde7ea; --cin:#1c1c20; --cin-soft:#e6e6ea;
+  --ok:#17804a; --ok-soft:#e1f3e8; --warn:#9a5a00; --warn-soft:#fff1d9;
+  --hero:#141416; --hero-ink:#ffffff; --hero-muted:#b9bac1;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --slab:"Alfa Slab One",Georgia,serif;
+  --body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e0e10; --card:#18181c; --sunk:#222228; --ink:#f2f2f4; --muted:#a2a3aa; --line:#2d2d33;
+    --red:#f0405a; --red-soft:#3b131a; --cin:#e8e8ec; --cin-soft:#2a2a30;
+    --ok:#4ccb86; --ok-soft:#11301f; --warn:#f2b24c; --warn-soft:#33260f;
+    --hero:#1b1b20; --hero-ink:#ffffff; --hero-muted:#a9aab1;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e0e10; --card:#18181c; --sunk:#222228; --ink:#f2f2f4; --muted:#a2a3aa; --line:#2d2d33;
+  --red:#f0405a; --red-soft:#3b131a; --cin:#e8e8ec; --cin-soft:#2a2a30;
+  --ok:#4ccb86; --ok-soft:#11301f; --warn:#f2b24c; --warn-soft:#33260f;
+  --hero:#1b1b20; --hero-ink:#ffffff; --hero-muted:#a9aab1;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 var(--body);padding-bottom:env(safe-area-inset-bottom,0px)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px}
+
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:calc(16px + env(safe-area-inset-top,0px)) 0 12px}
+.eyebrow{font:600 12px/1 var(--display);letter-spacing:.2em;text-transform:uppercase;color:var(--red);white-space:nowrap}
+h1{margin:6px 0 0;font:400 28px/1 var(--slab);letter-spacing:.01em}
+h1 span{color:var(--red)}
+.saved{font:600 12px/1.2 var(--display);max-width:96px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:right}
+.saved.warn{color:var(--warn)}
+
+.tabs{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.tabs .in{max-width:760px;margin:0 auto;padding:0 8px;display:flex;overflow-x:auto;scrollbar-width:none}
+.tabs .in::-webkit-scrollbar{display:none}
+.tab{flex:1 0 auto;min-width:62px;border:0;background:none;color:var(--muted);padding:10px 6px 8px;font:700 16px/1.1 var(--display);letter-spacing:.05em;text-transform:uppercase;border-bottom:3px solid transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+.tab small{font:600 12px/1 var(--display);letter-spacing:.04em;min-height:12px;text-transform:none}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--red)}
+.tab[aria-selected="true"] small{color:var(--red)}
+
+main{padding:16px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.card h3{margin:0 0 10px;font:700 15px var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+h2.sh{display:flex;align-items:center;gap:10px;margin:22px 0 10px;font:700 14px var(--display);letter-spacing:.18em;text-transform:uppercase;color:var(--red)}
+h2.sh::after{content:"";flex:1;height:1px;background:var(--line)}
+.help{margin:8px 0 0;font-size:14px;color:var(--muted)}
+.note{margin:12px 0 0;padding:10px 12px;border-radius:10px;background:var(--sunk);font-size:14px}
+.lnk{border:0;background:none;padding:0;color:var(--red);font-weight:700;text-decoration:underline;cursor:pointer}
+
+/* hero */
+.hero{background:radial-gradient(420px 220px at 85% 0%, rgba(227,32,58,.35), rgba(227,32,58,0) 70%), var(--hero);color:var(--hero-ink);border-radius:16px;padding:16px 16px 14px}
+.heb{font:600 12px var(--display);letter-spacing:.22em;text-transform:uppercase;color:#ff5a6e;text-align:center}
+.series{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:10px;margin-top:8px}
+.sv{display:flex;flex-direction:column;align-items:center;min-width:0}
+.sv span{font:700 18px/1.1 var(--display);letter-spacing:.08em;text-transform:uppercase;text-align:center;overflow-wrap:anywhere}
+.sv b{font:400 64px/1 var(--slab);margin-top:4px}
+.sv.u b{color:#ff4d63}
+.sep{width:16px;height:4px;border-radius:2px;background:rgba(255,255,255,.4)}
+.hsub{text-align:center;margin-top:6px;font:600 13px var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--hero-muted)}
+.champ{margin-top:12px;background:#e3203a;color:#fff;text-align:center;padding:9px;border-radius:10px;font:700 18px var(--display);letter-spacing:.06em;text-transform:uppercase}
+
+.tstrip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.tc{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:9px 6px;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+.tc small{font:700 12px var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.tc b{font:700 24px/1.1 var(--display);letter-spacing:.04em}
+.tc span{font:600 13px/1.15 var(--display);letter-spacing:.03em;color:var(--muted)}
+.tc.on{border-color:var(--red)}
+
+/* compact match block */
+.oc{display:grid;grid-template-columns:54px minmax(0,1fr);gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px}
+.oc.live{border-color:var(--red)}
+.ocC{background:var(--ink);color:var(--bg);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:62px}
+.ocC small{font:700 10px var(--display);letter-spacing:.18em}
+.ocC b{font:400 26px/1 var(--slab)}
+.ocC b.ev{font-size:18px}
+.ocB{min-width:0}
+.ocE{display:flex;justify-content:space-between;align-items:center;gap:8px;font:700 14px var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.ocR{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:3px 0 3px 8px;border-left:4px solid var(--cin-soft);margin-top:3px}
+.ocR.u{border-left-color:var(--red)}
+.ocR.c{border-left-color:var(--cin)}
+.ocR .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ocR .nm em{font:700 12px var(--display);font-style:normal;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-right:4px}
+.ocR.win .nm{font-weight:700}
+.ocR.win .nm::after{content:" \2713";color:var(--ok)}
+.ocR .sc{display:flex;gap:10px;font:700 19px/1 var(--display)}
+.ocR .sc i{font-style:normal;min-width:20px;text-align:right;color:var(--muted)}
+.ocR .sc i.w{color:var(--ink)}
+
+.badge{display:inline-flex;align-items:center;gap:5px;font:700 12px/1 var(--display);letter-spacing:.08em;text-transform:uppercase;padding:5px 8px;border-radius:999px;background:var(--sunk);color:var(--muted);white-space:nowrap}
+.badge.b-ready{color:var(--ink)}
+.badge.b-live{background:var(--red-soft);color:var(--red)}
+.badge.b-live::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;animation:pulse 1.4s ease-in-out infinite}
+.badge.b-done{background:var(--ok-soft);color:var(--ok)}
+.badge.b-bad{background:var(--warn-soft);color:var(--warn)}
+@keyframes pulse{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.badge.b-live::before{animation:none}}
+
+.nx{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.nxh{display:flex;align-items:baseline;gap:8px;font:700 14px var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.nxh b{font:400 18px/1 var(--slab);color:var(--ink);letter-spacing:0}
+.nxh .cr{margin-left:auto}
+.nxp{margin-top:4px;overflow-wrap:anywhere}
+.nxp .u{color:var(--red);font-weight:600}
+.nxp i{font-style:normal;color:var(--muted);padding:0 4px}
+.nxp .c{font-weight:600}
+
+.rest{display:flex;flex-wrap:wrap;gap:6px}
+.rest:not(:empty){margin-top:8px}
+.pill{font:600 13px/1.2 var(--display);letter-spacing:.03em;padding:4px 9px;border-radius:999px;background:var(--sunk)}
+.pill.wait{background:var(--warn-soft);color:var(--warn)}
+.pill.busy{background:var(--red-soft);color:var(--red)}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+
+.sched{list-style:none;margin:0;padding:0 14px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.sched li{display:grid;grid-template-columns:58px minmax(0,1fr);gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.sched li:last-child{border-bottom:0}
+.sched b{font:700 17px var(--display);letter-spacing:.03em}
+.sched span{font:600 17px var(--display);letter-spacing:.03em;text-transform:uppercase}
+.sched .lunch span{color:var(--red)}
+
+/* tie page */
+.th{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.th h2{margin:0;font:400 28px/1 var(--slab)}
+.th .fmt{margin-top:6px;font:600 13px var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.tsc{text-align:right;font:700 24px/1.1 var(--display);letter-spacing:.03em;white-space:nowrap}
+.tsc .u{color:var(--red)}
+.tsc small{display:block;font:600 13px var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--ok)}
+.checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:14px}
+@media (max-width:540px){.checks{grid-template-columns:minmax(0,1fr)}}
+.chk{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:10px 12px;font-size:14px}
+.chk h3{margin:0;display:flex;justify-content:space-between;gap:8px;font:700 14px var(--display);letter-spacing:.08em;text-transform:uppercase}
+.chk h3 span{color:var(--muted)}
+.chk.ok h3 span{color:var(--ok)}
+.chk.bad{border-color:var(--warn)}
+.chk.bad h3 span{color:var(--warn)}
+.chk ul{margin:6px 0 0;padding-left:18px}
+.chk p{margin:6px 0 0;color:var(--muted)}
+
+.match{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+.match.st-live{border-color:var(--red)}
+.match.st-bad{border-color:var(--warn)}
+.match.st-done{border-color:var(--ok)}
+.mh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mh>b{font:400 20px/1 var(--slab)}
+.mh .en{font:600 14px var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.mh .sp{flex:1}
+.court{display:inline-flex;align-items:center;gap:5px;font:600 13px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.court input{width:46px;height:32px;text-align:center;border:1px solid var(--line);border-radius:8px;background:var(--sunk);font:700 17px var(--display);padding:0}
+.gh,.row{display:grid;grid-template-columns:minmax(0,1fr) repeat(3,44px);gap:6px;align-items:center}
+.gh{margin-top:10px;font:700 11px var(--display);letter-spacing:.16em;color:var(--muted);text-align:center}
+.row{padding:6px 0 6px 10px;border-left:4px solid var(--cin-soft);margin-top:6px}
+.row.u{border-left-color:var(--red)}
+.row.c{border-left-color:var(--cin)}
+.pl{display:grid;gap:4px;min-width:0}
+.tm{font:700 12px/1 var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.row.u .tm{color:var(--red)}
+.row.win .tm::after{content:" \2713  winner";color:var(--ok)}
+select{width:100%;min-width:0;height:40px;border:1px solid var(--line);border-radius:8px;background:var(--sunk);padding:0 8px;font-size:16px;text-overflow:ellipsis}
+input.g{width:44px;height:48px;text-align:center;border:1px solid var(--line);border-radius:8px;background:var(--sunk);font:700 22px var(--display);padding:0}
+input.g.gw{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+input.g.gbad{background:var(--warn-soft);border-color:var(--warn)}
+input:disabled,select:disabled,textarea:disabled{opacity:.75}
+.frow{display:grid;grid-template-columns:minmax(0,1fr) 44px;gap:6px;align-items:center;margin-top:8px;padding-left:10px;border-left:4px solid var(--cin-soft)}
+.frow.win{border-left-color:var(--ok)}
+.x{border:0;background:none;color:var(--muted);font:600 13px var(--display);letter-spacing:.06em;text-transform:uppercase;cursor:pointer;padding:6px}
+
+/* setup */
+.teamgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:560px){.teamgrid{grid-template-columns:minmax(0,1fr)}}
+.field{margin-top:10px}
+.field:first-of-type{margin-top:0}
+.field label{display:block;font:600 12px var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+input.t,textarea{width:100%;border:1px solid var(--line);border-radius:8px;background:var(--sunk);padding:9px 10px;font-size:16px}
+textarea{resize:vertical;min-height:96px;line-height:1.4}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--line);background:var(--card);font:700 15px var(--display);letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.btn.pri{background:var(--red);border-color:var(--red);color:#fff}
+.btn.danger{color:var(--red)}
+.btn[disabled]{opacity:.5;cursor:default}
+.btns.center{justify-content:center}
+
+.snapb{margin-top:12px;padding:10px 12px;border-radius:12px;background:var(--warn-soft);border:1px solid var(--warn);display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.snapb p{margin:0;flex:1 1 220px;font-size:14px}
+.snapb .btn{min-height:38px}
+
+.foot{padding:18px 0 28px;text-align:center;font:600 13px var(--display);letter-spacing:.06em;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font:600 15px var(--display);letter-spacing:.04em;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:calc(100% - 32px);text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+.mbox{background:var(--card);border-radius:14px;padding:14px;width:min(560px,100%)}
+.mbox p{margin:0 0 8px;font-weight:600}
+.mbox textarea{min-height:240px;font-size:14px}
+.empty{color:var(--muted);text-align:center;padding:20px 8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Cardinal Badminton Club</div>
+      <h1>Derby City <span>Live</span></h1>
+    </div>
+    <div class="saved" id="saved"></div>
+  </header>
+</div>
+<nav class="tabs" id="tabs" aria-label="Sections"></nav>
+<div class="wrap">
+  <div id="snap"></div>
+  <main id="view"></main>
+  <footer class="foot">Derby City Badminton Invitational · Sunday, Nov 8, 2026 · UofL SRC, 3rd floor</footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="modal" id="modal" hidden><div class="mbox"><p>Copy this text:</p><textarea id="mtext" readonly></textarea><div class="btns"><button class="btn" data-act="mclose">Close</button></div></div></div>
+
+<script>
+(() => {
+'use strict';
+const KEY = 'derby-city-live-v1', TABKEY = 'derby-city-live-tab';
+const SIDES = ['U', 'C'];
+const EV = [
+  { k: 'MS', n: "Men's singles",   r: 1, s: ['m'] },
+  { k: 'WD', n: "Women's doubles", r: 1, s: ['w', 'w'] },
+  { k: 'MD', n: "Men's doubles",   r: 2, s: ['m', 'm'] },
+  { k: 'WS', n: "Women's singles", r: 2, s: ['w'] },
+  { k: 'XD', n: "Mixed doubles",   r: 2, s: ['m', 'w'] }
+];
+const TIE = [
+  { to: 21, cap: 30, label: 'Best of 3 to 21' },
+  { to: 21, cap: 30, label: 'Best of 3 to 21' },
+  { to: 15, cap: 21, label: 'Best of 3 to 15' }
+];
+const SCHED = [
+  ['11:00', 'Warm-up'], ['11:30', 'Tie 1 · Round 1'], ['12:30', 'Lunch'], ['1:30', 'Tie 1 · Round 2'],
+  ['2:30', 'Tie 2 · Round 1'], ['3:30', 'Tie 2 · Round 2'], ['4:30', 'Tie 3'], ['5:45', 'Awards and photos']
+];
+const REST_MIN = 10;
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const hm = ts => new Date(ts).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+const evk = k => EV.find(e => e.k === k);
+const names = ps => ps.filter(Boolean).join(' / ') || 'TBD';
+
+function blankMatch(e) { return { U: e.s.map(() => ''), C: e.s.map(() => ''), g: [['', ''], ['', ''], ['', '']], court: '', at: 0 }; }
+function blank() {
+  return {
+    v: 1,
+    teams: {
+      U: { name: 'UofL', short: 'UofL', men: ['Ayan', 'Harsha', 'Ranga', 'Vamshi'], women: ['Shikha', 'May', 'Aashna', 'Sreshta'] },
+      C: { name: 'Cincinnati', short: 'UC', men: ['Owen Haney', 'Mike Creamer', 'Tri Nguyen', 'Viet Bach Nguyen', 'Sukhbir Singh Sekhon'], women: ['Trinh Khan Linh', 'Kamilla Haidaienko'] }
+    },
+    courts: '1, 2, 3, 4',
+    t3: 'auto',
+    ties: TIE.map(() => Object.fromEntries(EV.map(e => [e.k, blankMatch(e)]))),
+    fr: [],
+    updated: 0
+  };
+}
+function norm(x) {
+  const o = blank();
+  if (!x || typeof x !== 'object') return o;
+  if (x.teams) for (const s of SIDES) {
+    const t = x.teams[s]; if (!t) continue;
+    for (const f of ['name', 'short']) if (typeof t[f] === 'string' && t[f].trim()) o.teams[s][f] = t[f];
+    for (const f of ['men', 'women']) if (Array.isArray(t[f])) o.teams[s][f] = t[f].map(v => String(v).trim()).filter(Boolean);
+  }
+  if (typeof x.courts === 'string') o.courts = x.courts;
+  if (x.t3 === 'tie' || x.t3 === 'auto') o.t3 = x.t3;
+  if (Array.isArray(x.ties)) x.ties.slice(0, 3).forEach((t, i) => {
+    if (!t || typeof t !== 'object') return;
+    for (const e of EV) {
+      const m = t[e.k], d = o.ties[i][e.k]; if (!m) continue;
+      for (const s of SIDES) if (Array.isArray(m[s])) d[s] = e.s.map((_, j) => typeof m[s][j] === 'string' ? m[s][j] : '');
+      if (Array.isArray(m.g)) d.g = [0, 1, 2].map(j => Array.isArray(m.g[j]) ? [0, 1].map(k => m.g[j][k] == null ? '' : String(m.g[j][k]).replace(/\D/g, '').slice(0, 2)) : ['', '']);
+      if (typeof m.court === 'string') d.court = m.court;
+      if (typeof m.at === 'number') d.at = m.at;
+    }
+  });
+  if (Array.isArray(x.fr)) o.fr = x.fr.filter(f => f && typeof f === 'object').map(f => ({ a: String(f.a || ''), b: String(f.b || ''), court: String(f.court || ''), sa: f.sa == null ? '' : String(f.sa), sb: f.sb == null ? '' : String(f.sb) }));
+  o.updated = +x.updated || 0;
+  return o;
+}
+
+/* ---------- scoring ---------- */
+function game(a, b, to, cap) {
+  a = String(a).trim(); b = String(b).trim();
+  if (a === '' && b === '') return null;
+  if (a === '' || b === '') return 'live';
+  const x = +a, y = +b;
+  if (!Number.isInteger(x) || !Number.isInteger(y) || x < 0 || y < 0 || x > cap || y > cap) return 'bad';
+  const w = Math.max(x, y), l = Math.min(x, y);
+  const fin = (w === to && l <= to - 2) || (w > to && w - l === 2 && l >= to - 1) || (w === cap && l === cap - 1);
+  if (fin) return x > y ? 'U' : 'C';
+  if (w === cap) return 'bad';
+  return (w < to || (l >= to - 1 && w - l < 2)) ? 'live' : 'bad';
+}
+function match(m, ti) {
+  const T = TIE[ti]; let u = 0, c = 0, bad = false, any = false, winner = null; const gr = [];
+  m.g.forEach(([a, b], j) => {
+    const r = game(a, b, T.to, T.cap); gr.push(r);
+    if (r === null) return;
+    any = true;
+    if (winner || gr.slice(0, j).some(p => p === null || p === 'live')) { bad = true; return; }
+    if (r === 'bad') bad = true; else if (r === 'U') u++; else if (r === 'C') c++;
+    if (u === 2) winner = 'U'; else if (c === 2) winner = 'C';
+  });
+  const set = SIDES.every(s => m[s].every(Boolean));
+  const st = bad ? 'bad' : winner ? 'done' : any ? 'live' : set ? 'ready' : 'empty';
+  return { u, c, winner: bad ? null : winner, st, gr, set };
+}
+function tie(ti) {
+  const t = S.ties[ti], R = {}; let U = 0, C = 0, done = 0;
+  for (const e of EV) { const r = match(t[e.k], ti); R[e.k] = r; if (r.winner === 'U') U++; if (r.winner === 'C') C++; if (r.st === 'done') done++; }
+  const started = EV.some(e => ['live', 'done', 'bad'].includes(R[e.k].st));
+  return { R, U, C, winner: U >= 3 ? 'U' : C >= 3 ? 'C' : null, complete: done === 5, started };
+}
+function series() {
+  const T = [0, 1, 2].map(tie);
+  const friendly = !!(T[0].winner && T[0].winner === T[1].winner && S.t3 !== 'tie');
+  let U = 0, C = 0;
+  T.forEach((t, i) => { if (i === 2 && friendly) return; if (t.winner === 'U') U++; if (t.winner === 'C') C++; });
+  return { T, U, C, champ: U >= 2 ? 'U' : C >= 2 ? 'C' : null, friendly };
+}
+function lineup(ti, s) {
+  const t = S.ties[ti], use = {}, issues = []; let filled = 0, total = 0;
+  for (const e of EV) {
+    const ps = t[e.k][s];
+    ps.forEach(p => { total++; if (p) { filled++; (use[p] = use[p] || []).push(e); } });
+    if (ps.length === 2 && ps[0] && ps[0] === ps[1]) issues.push(`${ps[0]} is in both ${e.k} spots`);
+  }
+  const both = [];
+  for (const [p, es] of Object.entries(use)) {
+    const ks = [...new Set(es.map(e => e.k))];
+    if (ks.length > 2) issues.push(`${p} is in ${ks.length} matches (max 2)`);
+    for (const r of [1, 2]) { const inR = ks.filter(k => evk(k).r === r); if (inR.length > 1) issues.push(`${p} plays twice in Round ${r} (${inR.join(', ')})`); }
+    if (new Set(ks.map(k => evk(k).r)).size === 2) both.push(p);
+  }
+  return { issues, both, filled, total };
+}
+function restInfo(ti, s, p) {
+  const t = S.ties[ti];
+  for (const e of EV.filter(x => x.r === 1)) {
+    if (!t[e.k][s].includes(p)) continue;
+    const r = match(t[e.k], ti);
+    if (r.st !== 'done') return { cls: 'busy', txt: `${p}: still playing ${e.k}` };
+    const ready = (t[e.k].at || 0) + REST_MIN * 60000;
+    if (Date.now() < ready) return { cls: 'wait', txt: `${p}: resting until ${hm(ready)}` };
+    return { cls: 'ok', txt: `${p}: rested` };
+  }
+  return null;
+}
+function restPills(ti, e) {
+  if (e.r !== 2) return '';
+  const m = S.ties[ti][e.k], r = match(m, ti);
+  if (r.st === 'done') return '';
+  return SIDES.flatMap(s => m[s].filter(Boolean).map(p => restInfo(ti, s, p)).filter(Boolean))
+    .map(p => `<span class="pill ${p.cls}">${esc(p.txt)}</span>`).join('');
+}
+function courtsList() { return S.courts.split(/[\s,;]+/).map(x => x.trim()).filter(Boolean); }
+function defaultCourt(k) { const e = evk(k); return courtsList()[EV.filter(x => x.r === e.r).indexOf(e)] || ''; }
+function courtOf(ti, k) { const c = S.ties[ti][k].court.trim(); return c || defaultCourt(k); }
+function badgeTxt(r) {
+  if (r.st === 'done') { const w = r.winner, a = w === 'U' ? r.u : r.c, b = w === 'U' ? r.c : r.u; return `${S.teams[w].short} wins ${a}-${b}`; }
+  if (r.st === 'live') return r.u + r.c > 0 ? `Live · ${r.u}-${r.c}` : 'Live';
+  if (r.st === 'bad') return 'Check score';
+  if (r.st === 'ready') return 'Ready';
+  return 'Lineup needed';
+}
+const badge = r => `<span class="badge b-${r.st}">${esc(badgeTxt(r))}</span>`;
+function gameList(m) { return m.g.filter(([a, b]) => a !== '' || b !== ''); }
+function scoreStr(m, first) { return gameList(m).map(([a, b]) => first === 'U' ? `${a || 0}-${b || 0}` : `${b || 0}-${a || 0}`).join(', '); }
+
+/* ---------- state ---------- */
+let S = blank(), RO = false, view = 'live';
+function loadLocal() { try { const raw = localStorage.getItem(KEY); S = raw ? norm(JSON.parse(raw)) : blank(); } catch (e) { S = blank(); } }
+function save() {
+  if (RO) return;
+  S.updated = Date.now();
+  const el = $('#saved');
+  try { localStorage.setItem(KEY, JSON.stringify(S)); el.textContent = 'Saved ' + hm(S.updated); el.className = 'saved'; }
+  catch (e) { el.textContent = 'Not saving on this device'; el.className = 'saved warn'; }
+}
+function enc(str) { const by = new TextEncoder().encode(str); let bin = ''; for (const b of by) bin += String.fromCharCode(b); return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+function dec(s) { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; const bin = atob(s), by = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) by[i] = bin.charCodeAt(i); return new TextDecoder().decode(by); }
+function shareLink() { return location.href.split('#')[0] + '#s=' + enc(JSON.stringify(S)); }
+function clearHash() { try { history.replaceState(null, '', location.href.split('#')[0]); } catch (e) { location.hash = ''; } }
+function openFromHash() {
+  const h = location.hash;
+  if (!h.startsWith('#s=')) return false;
+  try { S = norm(JSON.parse(dec(h.slice(3)))); RO = true; return true; }
+  catch (e) { toast('That share link could not be opened'); clearHash(); return false; }
+}
+
+/* ---------- views ---------- */
+function renderTabs(se) {
+  se = se || series();
+  const items = [['live', 'Live', ''], ['t0', 'Tie 1'], ['t1', 'Tie 2'], ['t2', 'Tie 3'], ['setup', 'Setup', '']];
+  $('#tabs').innerHTML = `<div class="in" role="tablist">${items.map(([id, l]) => {
+    let sub = '';
+    if (/^t\d$/.test(id)) { const i = +id[1], t = se.T[i]; sub = i === 2 && se.friendly ? 'Friendly' : t.started ? `${t.U}-${t.C}` : ''; }
+    if (id === 'live' && (se.U || se.C)) sub = `${se.U}-${se.C}`;
+    return `<button class="tab" role="tab" aria-selected="${view === id}" data-act="tab" data-v="${id}">${l}<small>${esc(sub)}</small></button>`;
+  }).join('')}</div>`;
+}
+function mini(ti, k, tile, live) {
+  const m = S.ties[ti][k], r = match(m, ti), e = evk(k);
+  const sc = s => m.g.map(([a, b], j) => (a === '' && b === '') ? '' : `<i class="${r.gr[j] === s ? 'w' : ''}">${esc((s === 'U' ? a : b) || '0')}</i>`).join('');
+  const row = s => `<div class="ocR ${s === 'U' ? 'u' : 'c'} ${r.winner === s ? 'win' : ''}"><span class="nm"><em>${esc(S.teams[s].short)}</em>${esc(names(m[s]))}</span><span class="sc">${sc(s)}</span></div>`;
+  const pills = restPills(ti, e);
+  return `<div class="oc ${live && r.st === 'live' ? 'live' : ''}"><div class="ocC">${tile}</div><div class="ocB"><div class="ocE"><span>${e.k} · ${esc(e.n)}</span>${badge(r)}</div>${row('U')}${row('C')}${pills ? `<div class="rest">${pills}</div>` : ''}</div></div>`;
+}
+const courtTile = (ti, k) => `<small>COURT</small><b>${esc(courtOf(ti, k) || '?')}</b>`;
+const evTile = k => `<b class="ev">${k}</b>`;
+function nextRow(ti, k) {
+  const m = S.ties[ti][k], e = evk(k), pills = restPills(ti, e);
+  return `<div class="nx"><div class="nxh"><b>${k}</b><span>${esc(e.n)}</span><span class="cr">Court ${esc(courtOf(ti, k) || '?')}</span></div><div class="nxp"><span class="u">${esc(names(m.U))}</span><i>vs</i><span class="c">${esc(names(m.C))}</span></div>${pills ? `<div class="rest">${pills}</div>` : ''}</div>`;
+}
+function liveHTML() {
+  const se = series(), U = S.teams.U, C = S.teams.C;
+  let h = `<section class="hero"><div class="heb">Derby City Badminton Invitational</div>
+    <div class="series"><div class="sv u"><span>${esc(U.name)}</span><b>${se.U}</b></div><div class="sep" aria-hidden="true"></div><div class="sv c"><span>${esc(C.name)}</span><b>${se.C}</b></div></div>
+    <div class="hsub">Best of 3 ties · first to 2 wins</div>
+    ${se.champ ? `<div class="champ">${esc(S.teams[se.champ].name)} win the series ${Math.max(se.U, se.C)}-${Math.min(se.U, se.C)}</div>` : ''}</section>`;
+  const playable = i => i < 2 || !se.friendly;
+  let cur = -1;
+  for (let i = 0; i < 3; i++) { if (!playable(i)) break; if (!se.T[i].complete) { cur = i; break; } }
+  h += `<div class="tstrip">${se.T.map((t, i) => {
+    let sc, st;
+    if (i === 2 && se.friendly) { sc = 'Friendly'; st = 'Mixed pairs'; }
+    else if (!t.started) { sc = '0-0'; st = (i === 2 && se.T[0].winner && se.T[1].winner && se.T[0].winner !== se.T[1].winner) ? 'Decider' : 'Not started'; }
+    else { sc = `${t.U}-${t.C}`; st = t.winner ? `${S.teams[t.winner].short} win${t.complete ? '' : ' · finishing'}` : 'In progress'; }
+    return `<button class="tc ${i === cur ? 'on' : ''}" data-act="tab" data-v="t${i}"><small>Tie ${i + 1}</small><b>${esc(sc)}</b><span>${esc(st)}</span></button>`;
+  }).join('')}</div>`;
+  const r1 = EV.filter(e => e.r === 1), r2 = EV.filter(e => e.r === 2);
+  if (cur >= 0) {
+    const t = se.T[cur], rnd = r1.some(e => t.R[e.k].st !== 'done') ? 1 : 2, now = rnd === 1 ? r1 : r2;
+    h += `<h2 class="sh">On court · Tie ${cur + 1} · Round ${rnd}</h2>` + now.map(e => mini(cur, e.k, courtTile(cur, e.k), true)).join('');
+    if (rnd === 1) h += `<h2 class="sh">Up next · Round 2</h2>` + r2.map(e => nextRow(cur, e.k)).join('');
+    else h += `<h2 class="sh">Tie ${cur + 1} · Round 1 results</h2>` + r1.map(e => mini(cur, e.k, evTile(e.k))).join('');
+  }
+  if (se.friendly) {
+    const fr = S.fr.filter(f => f.a || f.b || f.sa !== '' || f.sb !== '');
+    h += `<h2 class="sh">Tie 3 · Friendlies</h2>` + (fr.length ? fr.map(f => {
+      const g = game(f.sa, f.sb, 21, 30);
+      return `<div class="oc"><div class="ocC"><small>COURT</small><b>${esc(f.court || '?')}</b></div><div class="ocB"><div class="ocE"><span>Friendly</span>${g === 'U' || g === 'C' ? '<span class="badge b-done">Final</span>' : (g ? '<span class="badge b-live">Live</span>' : '<span class="badge">Up next</span>')}</div>
+        <div class="ocR ${g === 'U' ? 'win' : ''}"><span class="nm">${esc(f.a || 'Pair A')}</span><span class="sc"><i class="${g === 'U' ? 'w' : ''}">${esc(f.sa || '0')}</i></span></div>
+        <div class="ocR ${g === 'C' ? 'win' : ''}"><span class="nm">${esc(f.b || 'Pair B')}</span><span class="sc"><i class="${g === 'C' ? 'w' : ''}">${esc(f.sb || '0')}</i></span></div></div></div>`;
+    }).join('') : `<div class="empty">Friendly matches will show here once they're added on the Tie 3 tab.</div>`);
+  }
+  const doneTies = [0, 1, 2].filter(i => i !== cur && playable(i) && se.T[i].started).reverse();
+  for (const i of doneTies) h += `<h2 class="sh">Tie ${i + 1} results · ${esc(U.short)} ${se.T[i].U}-${se.T[i].C} ${esc(C.short)}</h2>` + EV.map(e => mini(i, e.k, evTile(e.k))).join('');
+  h += `<h2 class="sh">Schedule</h2><ul class="sched">${SCHED.map(([t, w]) => `<li class="${w === 'Lunch' ? 'lunch' : ''}"><b>${t}</b><span>${esc(w)}</span></li>`).join('')}</ul>`;
+  h += `<div class="btns center"><button class="btn" data-act="text">Copy results text</button><button class="btn" data-act="share">Copy share link</button></div>`;
+  return h;
+}
+function tscHTML(t) {
+  return `<span class="u">${esc(S.teams.U.short)} ${t.U}</span> - ${t.C} ${esc(S.teams.C.short)}${t.winner ? `<small>${esc(S.teams[t.winner].short)} take the tie</small>` : ''}`;
+}
+function checksHTML(ti) {
+  return SIDES.map(s => {
+    const L = lineup(ti, s), cls = L.issues.length ? 'bad' : L.filled === L.total ? 'ok' : '';
+    const st = L.issues.length ? 'Needs a fix' : L.filled === L.total ? 'Complete' : `${L.filled} of ${L.total} spots`;
+    return `<div class="chk ${cls}"><h3>${esc(S.teams[s].name)} lineup <span>${esc(st)}</span></h3>
+      ${L.issues.length ? `<ul>${L.issues.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+      ${L.both.length ? `<p>Plays both rounds (${REST_MIN} min rest): ${esc(L.both.join(', '))}</p>` : ''}</div>`;
+  }).join('');
+}
+function matchHTML(ti, e) {
+  const m = S.ties[ti][e.k], r = match(m, ti), dis = RO ? 'disabled' : '';
+  const sel = (s, i) => {
+    const g = e.s[i], list = S.teams[s][g === 'm' ? 'men' : 'women'], v = m[s][i];
+    const opts = v && !list.includes(v) ? [v, ...list] : list;
+    return `<select data-a="pick" data-t="${ti}" data-e="${e.k}" data-s="${s}" data-i="${i}" aria-label="${esc(S.teams[s].name)} ${esc(e.n)} player ${i + 1}" ${dis}><option value="">${g === 'm' ? 'Choose a man' : 'Choose a woman'}</option>${opts.map(p => `<option value="${esc(p)}"${p === v ? ' selected' : ''}>${esc(p)}</option>`).join('')}</select>`;
+  };
+  const row = s => `<div class="row ${s === 'U' ? 'u' : 'c'} ${r.winner === s ? 'win' : ''}" data-s="${s}"><div class="pl"><span class="tm">${esc(S.teams[s].short)}</span>${e.s.map((_, i) => sel(s, i)).join('')}</div>${[0, 1, 2].map(j => `<input class="g${r.gr[j] === s ? ' gw' : ''}${r.gr[j] === 'bad' ? ' gbad' : ''}" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" data-a="g" data-t="${ti}" data-e="${e.k}" data-s="${s}" data-gi="${j}" value="${esc(m.g[j][s === 'U' ? 0 : 1])}" aria-label="${esc(S.teams[s].short)} game ${j + 1}" ${dis}>`).join('')}</div>`;
+  return `<div class="match st-${r.st}" id="mc-${ti}-${e.k}"><div class="mh"><b>${e.k}</b><span class="en">${esc(e.n)}</span><span class="sp"></span><label class="court">Court <input type="text" inputmode="numeric" maxlength="3" autocomplete="off" data-a="court" data-t="${ti}" data-e="${e.k}" value="${esc(m.court)}" placeholder="${esc(defaultCourt(e.k))}" ${dis}></label><span id="st-${ti}-${e.k}">${badge(r)}</span></div>
+    <div class="gh" aria-hidden="true"><span></span><span>G1</span><span>G2</span><span>G3</span></div>${row('U')}${row('C')}<div class="rest" id="rest-${ti}-${e.k}">${restPills(ti, e)}</div></div>`;
+}
+function tieHTML(ti) {
+  const se = series();
+  if (ti === 2 && se.friendly) return friendlyHTML(se);
+  const t = se.T[ti], T = TIE[ti];
+  let h = `<div class="th"><div><h2>Tie ${ti + 1}</h2><div class="fmt">${T.label} · win by 2, capped at ${T.cap}</div></div><div class="tsc" id="tsc-${ti}">${tscHTML(t)}</div></div>`;
+  if (ti === 2 && S.t3 === 'tie' && se.T[0].winner && se.T[0].winner === se.T[1].winner)
+    h += `<div class="note">The series is already decided, but Tie 3 is set to play as a normal tie. <button class="lnk" data-act="t3" data-v="auto" ${RO ? 'disabled' : ''}>Make it a friendly</button></div>`;
+  h += `<div class="checks" id="chk-${ti}">${checksHTML(ti)}</div>`;
+  for (const r of [1, 2]) { h += `<h2 class="sh">Round ${r}</h2>`; for (const e of EV.filter(x => x.r === r)) h += matchHTML(ti, e); }
+  return h;
+}
+function friendlyHTML(se) {
+  const dis = RO ? 'disabled' : '';
+  let h = `<div class="th"><div><h2>Tie 3</h2><div class="fmt">Friendly · one game to 21</div></div></div>
+    <div class="note">${esc(S.teams[se.champ].name)} won the series ${Math.max(se.U, se.C)}-${Math.min(se.U, se.C)}, so Tie 3 is a friendly with mixed ${esc(S.teams.U.short)} and ${esc(S.teams.C.short)} pairs. <button class="lnk" data-act="t3" data-v="tie" ${dis}>Play it as a normal tie instead</button></div><div style="height:12px"></div>`;
+  h += S.fr.map((f, i) => {
+    const g = game(f.sa, f.sb, 21, 30);
+    const side = k => `<div class="frow ${g === (k === 'a' ? 'U' : 'C') ? 'win' : ''}" data-f="${k}"><input class="t" data-a="fr" data-i="${i}" data-f="${k}" value="${esc(f[k])}" placeholder="${k === 'a' ? 'Pair A' : 'Pair B'}" aria-label="Friendly ${i + 1} ${k === 'a' ? 'pair A' : 'pair B'}" ${dis}><input class="g${g === (k === 'a' ? 'U' : 'C') ? ' gw' : ''}${g === 'bad' ? ' gbad' : ''}" type="text" inputmode="numeric" maxlength="2" autocomplete="off" data-a="fr" data-i="${i}" data-f="s${k}" value="${esc(f['s' + k])}" aria-label="Friendly ${i + 1} ${k === 'a' ? 'pair A' : 'pair B'} score" ${dis}></div>`;
+    return `<div class="match" id="fr-${i}"><div class="mh"><b>F${i + 1}</b><span class="en">Friendly</span><span class="sp"></span><label class="court">Court <input type="text" inputmode="numeric" maxlength="3" data-a="fr" data-i="${i}" data-f="court" value="${esc(f.court)}" ${dis}></label><button class="x" data-act="frdel" data-i="${i}" ${dis}>Remove</button></div>${side('a')}${side('b')}</div>`;
+  }).join('');
+  h += `<div class="btns"><button class="btn pri" data-act="fradd" ${dis}>Add friendly match</button></div>`;
+  return h;
+}
+function setupHTML() {
+  const dis = RO ? 'disabled' : '';
+  const team = s => { const t = S.teams[s]; return `<div class="card"><h3>${s === 'U' ? 'Home team' : 'Visiting team'}</h3>
+    <div class="field"><label for="tn-${s}">Team name</label><input class="t" id="tn-${s}" data-a="team" data-s="${s}" data-f="name" value="${esc(t.name)}" ${dis}></div>
+    <div class="field"><label for="ts-${s}">Short name</label><input class="t" id="ts-${s}" data-a="team" data-s="${s}" data-f="short" maxlength="10" value="${esc(t.short)}" ${dis}></div>
+    <div class="field"><label for="tm-${s}">Men, one per line</label><textarea id="tm-${s}" data-a="roster" data-s="${s}" data-f="men" rows="5" ${dis}>${esc(t.men.join('\n'))}</textarea></div>
+    <div class="field"><label for="tw-${s}">Women, one per line</label><textarea id="tw-${s}" data-a="roster" data-s="${s}" data-f="women" rows="4" ${dis}>${esc(t.women.join('\n'))}</textarea></div></div>`; };
+  return `<h2 class="sh" style="margin-top:0">Teams</h2><div class="teamgrid">${team('U')}${team('C')}</div>
+    <h2 class="sh">Courts</h2><div class="card"><div class="field"><label for="courts">Courts in use</label><input class="t" id="courts" data-a="courts" value="${esc(S.courts)}" ${dis}></div><p class="help">Round 1 uses the first two courts and Round 2 the first three. You can still change the court on any match.</p></div>
+    <h2 class="sh">Share and backup</h2><div class="card"><p class="help" style="margin-top:0">Scores save on this phone only. To show someone the latest scores, or to hand scoring to another phone, send the share link. It opens a snapshot, and the other phone can take it over.</p>
+    <div class="btns"><button class="btn pri" data-act="share">Copy share link</button><button class="btn" data-act="text">Copy results text</button><button class="btn" data-act="dl">Download backup</button><label class="btn">Restore backup<input type="file" accept=".json,application/json" data-a="restore" hidden ${dis}></label><button class="btn danger" data-act="reset" ${dis}>Reset everything</button></div></div>`;
+}
+function snapHTML() {
+  if (!RO) return '';
+  return `<div class="snapb"><p><b>Shared snapshot</b>${S.updated ? ` from ${esc(hm(S.updated))}` : ''}. It's read-only. Take it over to keep scoring on this phone, which replaces this phone's saved scores.</p><button class="btn pri" data-act="snapuse">Take over scoring</button><button class="btn" data-act="snapclose">Back to my scores</button></div>`;
+}
+function render() {
+  const se = series();
+  renderTabs(se);
+  $('#snap').innerHTML = snapHTML();
+  const v = $('#view');
+  if (view === 'live') v.innerHTML = liveHTML();
+  else if (view === 'setup') v.innerHTML = setupHTML();
+  else v.innerHTML = tieHTML(+view[1]);
+}
+function refresh(ti) {
+  const se = series(); renderTabs(se);
+  if (view !== 't' + ti) return;
+  if (ti === 2 && se.friendly) return render();
+  const t = se.T[ti];
+  for (const e of EV) {
+    const r = t.R[e.k], card = document.getElementById(`mc-${ti}-${e.k}`);
+    if (!card) continue;
+    card.className = `match st-${r.st}`;
+    document.getElementById(`st-${ti}-${e.k}`).innerHTML = badge(r);
+    card.querySelectorAll('.row').forEach(row => {
+      const s = row.dataset.s; row.classList.toggle('win', r.winner === s);
+      row.querySelectorAll('input.g').forEach(inp => { const j = +inp.dataset.gi; inp.classList.toggle('gw', r.gr[j] === s); inp.classList.toggle('gbad', r.gr[j] === 'bad'); });
+    });
+    document.getElementById(`rest-${ti}-${e.k}`).innerHTML = restPills(ti, e);
+  }
+  const tsc = document.getElementById(`tsc-${ti}`); if (tsc) tsc.innerHTML = tscHTML(t);
+}
+function refreshFriendly(i) {
+  const f = S.fr[i], card = document.getElementById(`fr-${i}`); if (!f || !card) return;
+  const g = game(f.sa, f.sb, 21, 30);
+  card.querySelectorAll('.frow').forEach(row => {
+    const won = g === (row.dataset.f === 'a' ? 'U' : 'C');
+    row.classList.toggle('win', won);
+    const inp = row.querySelector('input.g'); inp.classList.toggle('gw', won); inp.classList.toggle('gbad', g === 'bad');
+  });
+}
+function setView(v) {
+  view = v;
+  try { localStorage.setItem(TABKEY, v); } catch (e) {}
+  render();
+  window.scrollTo(0, 0);
+}
+
+/* ---------- text, copy, files ---------- */
+function resultsText() {
+  const se = series(), U = S.teams.U, C = S.teams.C;
+  const L = ['Derby City Badminton Invitational', `Series: ${U.name} ${se.U}-${se.C} ${C.name}${se.champ ? ` (${S.teams[se.champ].name} win the series)` : ''}`];
+  se.T.forEach((t, i) => {
+    if ((i === 2 && se.friendly) || !t.started) return;
+    L.push('', `Tie ${i + 1}: ${U.name} ${t.U}-${t.C} ${C.name}${t.complete ? '' : ' (in progress)'}`);
+    for (const e of EV) {
+      const m = S.ties[i][e.k], r = t.R[e.k];
+      if (r.st === 'empty' || r.st === 'ready') continue;
+      if (r.st === 'done') { const w = r.winner, l = w === 'U' ? 'C' : 'U'; L.push(`${e.k}: ${names(m[w])} (${S.teams[w].short}) beat ${names(m[l])} (${S.teams[l].short}) ${scoreStr(m, w)}`); }
+      else L.push(`${e.k}: ${names(m.U)} (${U.short}) vs ${names(m.C)} (${C.short}) ${scoreStr(m, 'U')} (live)`);
+    }
+  });
+  if (se.friendly) {
+    const fr = S.fr.filter(f => f.sa !== '' || f.sb !== '');
+    if (fr.length) { L.push('', 'Tie 3 friendlies'); fr.forEach(f => L.push(`${f.a || 'Pair A'} vs ${f.b || 'Pair B'} ${f.sa || 0}-${f.sb || 0}`)); }
+  }
+  return L.join('\n');
+}
+let toastT;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2200); }
+function showText(text) { $('#mtext').value = text; $('#modal').hidden = false; $('#mtext').focus(); $('#mtext').select(); }
+async function copy(text, msg) {
+  try { await navigator.clipboard.writeText(text); toast(msg); return; } catch (e) {}
+  const ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select();
+  let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+  ta.remove();
+  if (ok) toast(msg); else showText(text);
+}
+function download() {
+  const blob = new Blob([JSON.stringify(S, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  const d = new Date(), p = n => String(n).padStart(2, '0');
+  a.href = url; a.download = `derby-city-backup-${p(d.getHours())}${p(d.getMinutes())}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 3000);
+  toast('Backup downloaded');
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('[data-act]'); if (!b || b.disabled) return;
+  const a = b.dataset.act;
+  if (a === 'tab') setView(b.dataset.v);
+  else if (a === 'share') copy(shareLink(), 'Share link copied');
+  else if (a === 'text') copy(resultsText(), 'Results copied');
+  else if (a === 'dl') download();
+  else if (a === 'reset') {
+    if (b.dataset.armed) { S = blank(); save(); render(); toast('Everything reset'); }
+    else { b.dataset.armed = '1'; b.textContent = 'Tap again to reset'; setTimeout(() => { if (b.isConnected) { delete b.dataset.armed; b.textContent = 'Reset everything'; } }, 4000); }
+  }
+  else if (a === 'fradd') { S.fr.push({ a: '', b: '', court: '', sa: '', sb: '' }); save(); render(); }
+  else if (a === 'frdel') { S.fr.splice(+b.dataset.i, 1); save(); render(); }
+  else if (a === 't3') { S.t3 = b.dataset.v; save(); render(); }
+  else if (a === 'snapuse') { RO = false; clearHash(); save(); render(); toast('Scoring is now on this phone'); }
+  else if (a === 'snapclose') { RO = false; clearHash(); loadLocal(); render(); }
+  else if (a === 'mclose') $('#modal').hidden = true;
+});
+const view$ = $('#view');
+view$.addEventListener('input', ev => {
+  const el = ev.target, a = el.dataset.a; if (!a || RO) return;
+  if (a === 'g') {
+    const clean = el.value.replace(/\D/g, '').slice(0, 2); if (clean !== el.value) el.value = clean;
+    const ti = +el.dataset.t, m = S.ties[ti][el.dataset.e];
+    m.g[+el.dataset.gi][el.dataset.s === 'U' ? 0 : 1] = clean;
+    const r = match(m, ti);
+    if (r.st === 'done') { if (!m.at) m.at = Date.now(); } else m.at = 0;
+    save(); refresh(ti);
+  } else if (a === 'court') { S.ties[+el.dataset.t][el.dataset.e].court = el.value.trim(); save(); }
+  else if (a === 'fr') {
+    const i = +el.dataset.i, f = el.dataset.f;
+    let v = el.value; if (f === 'sa' || f === 'sb') { v = v.replace(/\D/g, '').slice(0, 2); if (v !== el.value) el.value = v; }
+    S.fr[i][f] = v; save(); refreshFriendly(i);
+  }
+  else if (a === 'team') { S.teams[el.dataset.s][el.dataset.f] = el.value; save(); renderTabs(); }
+  else if (a === 'courts') { S.courts = el.value; save(); }
+});
+view$.addEventListener('change', ev => {
+  const el = ev.target, a = el.dataset.a; if (!a) return;
+  if (a === 'restore') {
+    const f = el.files && el.files[0]; el.value = ''; if (!f) return;
+    const rd = new FileReader();
+    rd.onload = () => { try { const x = JSON.parse(rd.result); if (!x || !Array.isArray(x.ties)) throw 0; S = norm(x); save(); render(); toast('Backup restored'); } catch (e) { toast("That file isn't a Derby City backup"); } };
+    rd.readAsText(f); return;
+  }
+  if (RO) return;
+  if (a === 'pick') { S.ties[+el.dataset.t][el.dataset.e][el.dataset.s][+el.dataset.i] = el.value; save(); render(); }
+  else if (a === 'roster') { S.teams[el.dataset.s][el.dataset.f] = el.value.split('\n').map(x => x.trim()).filter(Boolean); save(); }
+  else if (a === 'team') { if (!S.teams[el.dataset.s][el.dataset.f].trim()) { S.teams[el.dataset.s][el.dataset.f] = el.dataset.f === 'name' ? (el.dataset.s === 'U' ? 'UofL' : 'Cincinnati') : (el.dataset.s === 'U' ? 'UofL' : 'UC'); save(); render(); } }
+});
+window.addEventListener('hashchange', () => { if (openFromHash()) render(); });
+window.addEventListener('storage', e => { if (e.key === KEY && !RO) { loadLocal(); if (view === 'live') render(); } });
+setInterval(() => {
+  if (document.hidden) return;
+  if (view === 'live') render();
+  else if (/^t\d$/.test(view)) { const ti = +view[1]; if (!(ti === 2 && series().friendly)) refresh(ti); }
+}, 30000);
+
+/* ---------- start ---------- */
+if (!openFromHash()) loadLocal();
+try { const v = localStorage.getItem(TABKEY); if (v && /^(live|setup|t[0-2])$/.test(v)) view = v; } catch (e) {}
+const sv = $('#saved');
+if (RO) sv.textContent = 'Snapshot';
+else if (S.updated) sv.textContent = 'Saved ' + hm(S.updated);
+else { try { localStorage.setItem(KEY + '-probe', '1'); localStorage.removeItem(KEY + '-probe'); sv.textContent = 'Saves on this phone'; } catch (e) { sv.textContent = 'Not saving on this device'; sv.className = 'saved warn'; } }
+render();
+})();
+</script>
+</body>
+</html>
